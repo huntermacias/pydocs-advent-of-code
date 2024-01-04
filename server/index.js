@@ -9,36 +9,43 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-const port = 3001;
+const port = 3002;
 
 // Code execution API endpoint
 app.post('/run-code', (req, res) => {
     const { language, code } = req.body;
 
-    // Check if the language is Python
     if (language === 'python') {
-        // Write the code to a temporary file
-        const tempFilePath = `tempCode-${uuidv4()}.py`;
+        const tempFilePath = `D:\\builds\\pydocs\\tempCode-${uuidv4()}.py`; // Use an absolute path
         fs.writeFileSync(tempFilePath, code);
 
-        // Execute the Python script
-        exec(`python ${tempFilePath}`, (error, stdout, stderr) => {
-            if (error) {
-                console.error(`exec error: ${error}`);
-                return res.status(500).send({ error: `Execution error: ${error.message}` });
-            }
-            res.send({ output: stdout, error: stderr });
-        });
-		
-        // Delete the temporary file
-        fs.unlink(tempFilePath, (err) => {
-            if (err) console.error(`Error deleting temp file: ${err}`);
-        });
+        console.log("File created at:", tempFilePath); // Log to verify
+        console.log("Current working directory:", process.cwd()); // Log the CWD
+
+        // Check if file exists
+        if (fs.existsSync(tempFilePath)) {
+            console.log("File exists, executing...");
+
+            exec(`python "${tempFilePath}"`, (error, stdout, stderr) => { // Added quotes around file path
+                if (error) {
+                    console.error(`exec error: ${error}`);
+                    return res.status(500).send({ error: `Execution error: ${error.message}` });
+                }
+
+                res.send({ output: stdout, error: stderr });
+
+                // Delete the file after execution
+                fs.unlinkSync(tempFilePath);
+            });
+        } else {
+            console.error("File not found:", tempFilePath);
+            res.status(500).send({ error: 'Temporary file not found' });
+        }
     } else {
-        // If the language is not supported, send an error response
         res.status(400).send({ error: 'Unsupported language' });
     }
 });
+
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

@@ -31,6 +31,8 @@ type ChallengeProps = {
 const AdventChallengePage = () => {
   const [challenge, setChallenge] = useState<ChallengeProps | null>(null);
   const [editorCode, setEditorCode] = useState("");
+  const [executionResult, setExecutionResult] = useState(""); // State to store execution result
+
 
     // Function to handle code changes in the editor
 	const handleEditorChange = (newCode: string) => {
@@ -38,26 +40,29 @@ const AdventChallengePage = () => {
 	  };
 
   // Function to handle code submission
-  const handleCodeSubmit = async (testCase: any) => {
-    try {
-      const response = await fetch('http://localhost:3001/run-code', {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          language: "python", // or dynamically based on user selection
-          code: editorCode,
-          input: testCase.input,
-        }),
-      });
-
-      const data = await response.json();
-      console.log('data',data); // Handle the response data as needed
-    } catch (error) {
-      console.error("Error submitting code:", error);
-    }
+  const handleCodeSubmit = async (testCase: TestCase) => {
+	try {
+	  const response = await fetch('http://localhost:3002/run-code', {
+		method: "POST",
+		headers: {
+		  "Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+		  language: "python",
+		  code: editorCode,
+		  input: testCase.input,
+		}),
+	  });
+  
+	  const data = await response.json();
+	  console.log('Response Data:', data); // Log the response data
+	  setExecutionResult(`Output: ${data.output}\nError: ${data.error}`);
+	} catch (error) {
+	  console.error("Error submitting code:", error);
+	  setExecutionResult(`Error: ${error}`);
+	}
   };
+  
 
   let title;
 
@@ -138,6 +143,10 @@ const AdventChallengePage = () => {
         <div>
           <h2 className="text-2xl font-semibold mb-4">Test Cases</h2>
           <div className="space-y-4">
+			{/* Display Execution Result */}
+			<pre className="bg-gray-700 text-white p-2 rounded mb-4">
+            {executionResult}
+          </pre>
             {challenge.test_cases.map((testCase, index) => (
               <div key={index} className="bg-gray-800 p-4 rounded-lg">
                 <p className="font-semibold">Test Case {index + 1}</p>
