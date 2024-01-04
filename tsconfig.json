@@ -29,6 +29,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "server/**/*.ts"
-  ],
+, "server/index.js"  ],
   "exclude": ["node_modules", "build"]
 }

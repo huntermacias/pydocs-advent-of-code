@@ -1,26 +1,22 @@
-# Use a base image that includes both Node.js and Python
-# You might need to find or create an image that includes both or use a multi-stage build
-FROM nikolaik/python-nodejs:latest
+# Use an official Node runtime as a parent image
+FROM node:20
 
-# Create and set the working directory
-WORKDIR /usr/src/app
+# Set the working directory in the container
+WORKDIR /project
 
-# Copy package.json and package-lock.json for Node dependencies
+# Copy package.json and package-lock.json
 COPY package*.json ./
+# Copy server code into the container
+COPY ./server /usr/src/app/server
 
-# Install Node dependencies
-RUN npm install
+# Install any needed packages
+RUN npm cache clean --force && npm install || cat /root/.npm/_logs/*-debug.log
 
-# Copy the Python interpreter/executor and any dependencies
-# If you have a requirements.txt for Python dependencies, copy and install it here
-# COPY requirements.txt ./
-# RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy source files
+# Copy the rest of your app's source code from your host to your image filesystem.
 COPY . .
 
-# Compile TypeScript to JavaScript
-RUN npm run build
+# Make port 3001 available to the world outside this container
+EXPOSE 3001
 
-# Set the command to start your Node.js/Express server
-CMD [ "node", "dist/index.js" ]
+# Run the app when the container launches
+CMD ["node", "server/index.js"]

@@ -1,8 +1,9 @@
-import express, { Request, Response } from 'express';
-import bodyParser from 'body-parser';
-import cors from 'cors';
-import { exec } from 'child_process';
-import fs from 'fs';
+const express = require('express');
+const bodyParser = require('body-parser');
+const cors = require('cors');
+const { exec } = require('child_process');
+const fs = require('fs');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 app.use(bodyParser.json());
@@ -11,13 +12,13 @@ app.use(cors());
 const port = 3001;
 
 // Code execution API endpoint
-app.post('/run-code', (req: Request, res: Response) => {
+app.post('/run-code', (req, res) => {
     const { language, code } = req.body;
 
     // Check if the language is Python
     if (language === 'python') {
         // Write the code to a temporary file
-        const tempFilePath = 'tempCode.py';
+        const tempFilePath = `tempCode-${uuidv4()}.py`;
         fs.writeFileSync(tempFilePath, code);
 
         // Execute the Python script
@@ -27,6 +28,11 @@ app.post('/run-code', (req: Request, res: Response) => {
                 return res.status(500).send({ error: `Execution error: ${error.message}` });
             }
             res.send({ output: stdout, error: stderr });
+        });
+		
+        // Delete the temporary file
+        fs.unlink(tempFilePath, (err) => {
+            if (err) console.error(`Error deleting temp file: ${err}`);
         });
     } else {
         // If the language is not supported, send an error response
