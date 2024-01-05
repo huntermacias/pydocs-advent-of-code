@@ -36,3 +36,7 @@
 	background: rgb(3, 7, 18);
 
   }
+
+  .button:hover {
+	transition: background-color 0.3s ease;
+  }
