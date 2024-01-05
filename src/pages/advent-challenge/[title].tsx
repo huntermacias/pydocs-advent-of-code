@@ -14,13 +14,9 @@ import AceEditor from "react-ace"; // Assuming AceEditor is used
 
 import "ace-builds/src-noconflict/mode-python"; // Import AceEditor modes
 import "ace-builds/src-noconflict/theme-chaos"; // Import AceEditor themes
-import Confetti from "react-confetti";
+import Confetti from 'react-confetti'
 import { Progress } from "@/components/ui/progress";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+
 
 type TestCase = {
   input: string;
@@ -43,22 +39,23 @@ const AdventChallengePage = () => {
   const [isTestRunning, setIsTestRunning] = useState(false);
   const [progress, setProgress] = useState(0); // State for progress
 
-  const runAllTestCases = async (challenge: ChallengeProps) => {
+
+  const runAllTestCases = async (challenge:ChallengeProps) => {
     setIsTestRunning(true);
     let passedTests = 0;
 
     for (const testCase of challenge.test_cases) {
       try {
-        const response = await fetch("http://localhost:3002/run-code", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            language: "python",
-            code: editorCode,
-            input: testCase.input,
-          }),
+        const response = await fetch('http://localhost:3002/run-code', {
+			method: "POST",
+			headers: {
+			  "Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+			  language: "python",
+			  code: editorCode,
+			  input: testCase.input,
+			}),
         });
 
         const data = await response.json();
@@ -70,41 +67,38 @@ const AdventChallengePage = () => {
       }
     }
 
-    const progressPercentage =
-      (passedTests / challenge.test_cases.length) * 100;
+    const progressPercentage = (passedTests / challenge.test_cases.length) * 100;
     setProgress(progressPercentage);
-    setExecutionResult(
-      `${passedTests} out of ${challenge.test_cases.length} tests passed.`
-    );
+    setExecutionResult(`${passedTests} out of ${challenge.test_cases.length} tests passed.`);
     setIsTestRunning(false);
   };
 
-  // Function to handle code changes in the editor
-  const handleEditorChange = (newCode: string) => {
-    setEditorCode(newCode);
-  };
+    // Function to handle code changes in the editor
+	const handleEditorChange = (newCode: string) => {
+		setEditorCode(newCode);
+	  };
+
 
   // Function to handle code submission
   const handleCodeSubmit = async (testCase: TestCase) => {
-    setIsTestRunning(true);
-    try {
-      const response = await fetch("http://localhost:3002/run-code", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          language: "python",
-          code: editorCode,
-          input: testCase.input,
-        }),
-      });
-
-      const data = await response.json();
+	setIsTestRunning(true);
+	try {
+	  const response = await fetch('http://localhost:3002/run-code', {
+		method: "POST",
+		headers: {
+		  "Content-Type": "application/json",
+		},
+		body: JSON.stringify({
+		  language: "python",
+		  code: editorCode,
+		  input: testCase.input,
+		}),
+	  });
+  
+	  const data = await response.json();
       const passed = data.output.trim() === testCase.output.trim();
-      setExecutionResult(
-        `Test Case ${passed ? "Passed" : "Failed"}\n\nOutput:\n${data.output}`
-      );
+      setExecutionResult(`Test Case ${passed ? 'Passed' : 'Failed'}\n\nOutput:\n${data.output}`);
+	
     } catch (error) {
       console.error("Error submitting code:", error);
       setExecutionResult(`Error: ${error}`);
@@ -112,6 +106,7 @@ const AdventChallengePage = () => {
       setIsTestRunning(false);
     }
   };
+  
 
   let title;
 
@@ -135,119 +130,105 @@ const AdventChallengePage = () => {
   }
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen w-full bg-[#011627] text-white">
-      <ResizablePanelGroup direction="horizontal" className="w-full">
-        {/* Story and Problem Description Section */}
-        <ResizablePanel defaultSize={50} minSize={20} maxSize={80}>
-          <div className="p-8 border-r lg:border-gray-700">
-            <h1 className="text-4xl font-bold mb-6">{challenge.title}</h1>
-            <div className="mb-8">
-              <span className="bg-purple-800 px-3 py-1 rounded text-sm font-semibold mr-2">
-                Difficulty: {challenge.difficulty}
-              </span>
-              {challenge.topics.map((topic) => (
-                <Badge
-                  key={topic}
-                  className="mr-2 mb-2 bg-blue-700 hover:bg-blue-600"
-                >
-                  {topic}
-                </Badge>
-              ))}
-            </div>
-            <div className="space-y-2">
-              <p className="text-lg leading-relaxed">{challenge.description}</p>
-              {challenge.hints?.map((hint, index) => (
-                <Accordion
-                  key={index}
-                  type="single"
-                  collapsible
-                  className="w-full"
-                >
-                  <AccordionItem value={`hint-${index}`}>
-                    <AccordionTrigger className="bg-gray-950 p-4 hover:bg-gray-700 rounded">
-                      <p className="tracking-wider font-semibold underline decoration-indigo-500">{`Hint ${
-                        index + 1
-                      }`}</p>
-                    </AccordionTrigger>
-                    <AccordionContent className="bg-gray-900 rounded p-4">
-                      <p>{hint}</p>
-                    </AccordionContent>
-                  </AccordionItem>
-                </Accordion>
-              ))}
-            </div>
-          </div>
-        </ResizablePanel>
-        <ResizableHandle withHandle />
+<div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-[#011627] text-white">
+      {/* Story and Problem Description Section */}
+	  <div className="p-8 border-r lg:border-gray-700">
+        <h1 className="text-4xl font-bold mb-6">{challenge.title}</h1>
+        <div className="mb-8">
+          <span className="bg-purple-800 px-3 py-1 rounded text-sm font-semibold mr-2">
+            Difficulty: {challenge.difficulty}
+          </span>
+          {challenge.topics.map((topic) => (
+            <Badge
+              key={topic}
+              className="mr-2 mb-2 bg-blue-700 hover:bg-blue-600"
+            >
+              {topic}
+            </Badge>
+          ))}
+        </div>
+        <div className="space-y-2">
+          <p className="text-lg leading-relaxed">{challenge.description}</p>
+          {challenge.hints?.map((hint, index) => (
+            <Accordion key={index} type="single" collapsible className="w-full">
+              <AccordionItem value={`hint-${index}`}>
+                <AccordionTrigger className="bg-gray-950 p-4 hover:bg-gray-700 rounded">
+                  <p className="tracking-wider font-semibold underline decoration-indigo-500">{`Hint ${
+                    index + 1
+                  }`}</p>
+                </AccordionTrigger>
+                <AccordionContent className="bg-gray-900 rounded p-4">
+                  <p>{hint}</p>
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          ))}
+        </div>
+      </div>
 
-        {/* Coding and Testing Section */}
-        <ResizablePanel defaultSize={50} minSize={20} maxSize={80}>
-          <div className="p-8">
-            <div className="mb-8">
-              <h2 className="text-2xl font-semibold mb-4">
-                Let&apos;s Get Started
-              </h2>
-              <AceEditor
-                mode="python"
-                theme="chaos"
-                name="codeEditor"
-                onChange={handleEditorChange}
-                value={editorCode}
-                editorProps={{ $blockScrolling: true }}
-                setOptions={{ useWorker: false }}
-                placeholder="// Start coding here"
-                className=" min-h-[600px] rounded-sm shadow"
-              />
-            </div>
-            <div>
-              <h2 className="text-2xl font-semibold mb-4">Test Cases</h2>
-              {isTestRunning && (
-                <p className="text-blue-500">Running all tests...</p>
-              )}
-              <div className="bg-gray-700 text-white p-4 rounded-lg mb-4">
-                <p className="font-semibold">Execution Result:</p>
-                <pre className="max-h-60 overflow-y-auto">
-                  {executionResult || "No results yet"}
-                </pre>
+      {/* Coding and Testing Section */}
+	  <div className="p-8">
+        <div className="mb-8 w-full overflow-x-hidden">
+          <h2 className="text-2xl font-semibold mb-4">
+            Let&apos;s Get Started
+          </h2>
+		  <AceEditor
+            mode="python"
+            theme="chaos"
+            name="codeEditor"
+            onChange={handleEditorChange}
+            value={editorCode}
+            editorProps={{ $blockScrolling: true }}
+            setOptions={{ useWorker: false }}
+            placeholder="// Start coding here"
+			className="w-full h-[400px] md:h-[500px] lg:h-[600px]"
+          
+        />
+        </div>
+        <div>
+		<h2 className="text-2xl font-semibold mb-4">Test Cases</h2>
+          {isTestRunning && <p className="text-blue-500">Running all tests...</p>}
+          <div className="bg-gray-700 text-white p-4 rounded-lg mb-4">
+            <p className="font-semibold">Execution Result:</p>
+            <pre className="max-h-60 overflow-y-auto">{executionResult || "No results yet"}</pre>
+          </div>
+		  <button
+			onClick={() => runAllTestCases(challenge)}
+            className="mb-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
+          >
+            Run All Tests
+          </button>
+		  <Progress value={progress} />
+          {challenge.test_cases.map((testCase, index) => (
+            <div key={index} className="bg-gray-800 p-4 rounded-lg mb-4">
+              <p className="font-semibold">Test Case {index + 1}</p>
+              <div className="flex flex-col md:flex-row gap-4">
+                <div className="flex-1 lg:w-1/2">
+                  <p className="font-medium text-sm mb-1">Input:</p>
+                  <div className="bg-gray-700 text-white p-2 rounded overflow-auto max-h-40">
+                    <p>{testCase.input}</p>
+                  </div>
+                </div>
+                <div className="flex-1 lg:w-1/2">
+                  <p className="font-medium text-sm mb-1">Expected Output:</p>
+                  <div className="bg-gray-700 text-white p-2 rounded overflow-auto max-h-40">
+                    <p>{testCase.output}</p>
+                  </div>
+                </div>
               </div>
               <button
-                onClick={() => runAllTestCases(challenge)}
-                className="mb-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
+                onClick={() => handleCodeSubmit(testCase)}
+                className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded w-full lg:w-auto"
               >
-                Run All Tests
+                Run Test
               </button>
-              <Progress value={progress} />
-              {challenge.test_cases.map((testCase, index) => (
-                <div key={index} className="bg-gray-800 p-4 rounded-lg mb-4">
-                  <p className="font-semibold">Test Case {index + 1}</p>
-                  <div className="flex flex-col md:flex-row gap-4">
-                    <div className="flex-1 lg:w-1/2">
-                      <p className="font-medium text-sm mb-1">Input:</p>
-                      <div className="bg-gray-700 text-white p-2 rounded overflow-auto max-h-40">
-                        <p>{testCase.input}</p>
-                      </div>
-                    </div>
-                    <div className="flex-1 lg:w-1/2">
-                      <p className="font-medium text-sm mb-1">
-                        Expected Output:
-                      </p>
-                      <div className="bg-gray-700 text-white p-2 rounded overflow-auto max-h-40">
-                        <p>{testCase.output}</p>
-                      </div>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleCodeSubmit(testCase)}
-                    className="mt-4 bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded w-full lg:w-auto"
-                  >
-                    Run Test
-                  </button>
-                </div>
-              ))}
+				
             </div>
-          </div>
-        </ResizablePanel>
-      </ResizablePanelGroup>
+
+
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
