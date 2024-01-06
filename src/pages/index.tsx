@@ -5,13 +5,10 @@ import { Challenges } from "@/constants/advent_challenges";
 import Sidebar from "@/components/Sidebar";
 import ShowCode from "@/components/ShowCode";
 import { Input } from "@/components/ui/input";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
+
 
 import ChallengesCarousel from "@/components/ChallengesCarousel";
+import { UserButton } from "@clerk/nextjs";
 
 export default function Home() {
   const [activeSection, setActiveSection] = useState("");

@@ -1,5 +1,6 @@
 import Head from 'next/head';
 import '../styles/globals.css'; // Adjust the path according to your directory structure
+import Layout from '@/components/layout';
 
 function MyApp({ Component, pageProps }: { Component: any, pageProps: any }) {
   return (
@@ -22,7 +23,10 @@ function MyApp({ Component, pageProps }: { Component: any, pageProps: any }) {
         {/* <link rel="icon" href="/favicon.ico" /> */}
         {/* Add additional global meta tags or links here */}
       </Head>
-      <Component {...pageProps} />
+      <Layout>
+        <Component {...pageProps} />
+
+      </Layout>
     </>
   );
 }

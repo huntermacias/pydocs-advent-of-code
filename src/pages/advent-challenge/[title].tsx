@@ -16,6 +16,7 @@ import "ace-builds/src-noconflict/mode-python"; // Import AceEditor modes
 import "ace-builds/src-noconflict/theme-chaos"; // Import AceEditor themes
 import Confetti from 'react-confetti'
 import { Progress } from "@/components/ui/progress";
+import { UserButton } from "@clerk/nextjs";
 
 
 type TestCase = {
@@ -131,8 +132,12 @@ const AdventChallengePage = () => {
 
   return (
 <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-[#011627] text-white">
+{/* Top bar for user account management */}
       {/* Story and Problem Description Section */}
 	  <div className="p-8 border-r lg:border-gray-700">
+<div className="flex justify-end p-0.5">
+        <UserButton afterSignOutUrl="/" />
+      </div>
         <h1 className="text-4xl font-bold mb-6">{challenge.title}</h1>
         <div className="mb-8">
           <span className="bg-purple-800 px-3 py-1 rounded text-sm font-semibold mr-2">
