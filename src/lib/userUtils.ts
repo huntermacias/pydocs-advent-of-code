@@ -19,7 +19,7 @@ export const getUserByExternalId = async (externalUserId: string) => {
     return user;
 };
 
-// Function to add a solved problem to a user
+
 // Function to add a completed challenge to a user
 export const addSolvedProblem = async (userId: string, challengeId: string) => {
   try {
@@ -39,6 +39,7 @@ export const addSolvedProblem = async (userId: string, challengeId: string) => {
     throw error; // Propagate error for further handling
   }
 };
+
 
 
 
