@@ -52,15 +52,15 @@ export const getLeaderboardInfo = async () => {
         select: {
           id: true,
           username: true,
-          completedChallenges: { select: { id: true } }
+          // completedChallenges: { select: { id: true } }
         }
       });
   
       const leaderboard = users.map(user => ({
         id: user.id,
         username: user.username,
-        completedCount: user.completedChallenges.length
-      })).sort((a, b) => b.completedCount - a.completedCount);
+        // completedCount: user.completedChallenges.length
+      }));
   
       return leaderboard;
     } catch (error) {
