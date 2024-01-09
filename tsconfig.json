@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es5",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
@@ -29,6 +29,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "server/**/*.ts"
-, "server/index.js"  ],
+, "server/index.js", "resetSolvedProblems.js"  ],
   "exclude": ["node_modules", "build"]
 }

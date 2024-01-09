@@ -1,18 +1,8 @@
-type TestCase = {
-	input: string;
-	output: string;
-  };
-  
-  type ChallengeProps = {
-	title: string;
-	description: string;
-	difficulty: string;
-	topics: string[];
-	hints: string[];
-	test_cases: TestCase[];
-  };
-  
-  export const Challenges: ChallengeProps[] = [
+const { PrismaClient } = require('@prisma/client');
+const db = new PrismaClient();
+
+async function populateChallenges() {
+  const challenges = [
 	{
 	  title: "Enigmatic Code",
 	  description: "In an old digital archive, Alex, a young programmer, finds a strange artifact from a forgotten era of computing. This artifact is a series of coded messages, each consisting of a blend of letters and numbers. Alex learns that these messages are keys to accessing a series of hidden servers, each holding a piece of an ancient algorithm. To reveal the location of each server, Alex must decode these messages. Upon closer examination, Alex notices a pattern in the way these messages are encoded. Each message contains a sequence where every letter is paired with a number. The key to decoding the message lies in using the numbers immediately following a letter, but only if the letter is in uppercase. The last letter of the message, irrespective of its case, signifies the server's classification. For example, in the message '13aB45c67D', the uppercase 'B' is followed by '45', but Alex needs to use only the first digit after 'B', which is '4'. The last letter 'D' denotes the server's classification. So, the decoded message is '4D'. Alex compiles a list of such messages and sets out to decode them to uncover the hidden servers.",
@@ -54,3 +44,32 @@ type TestCase = {
 	// Additional challenges can follow the story
   ];
   
+
+  for (const challenge of challenges) {
+    const createdChallenge = await db.challenge.create({
+      data: {
+        title: challenge.title,
+        description: challenge.description,
+        difficulty: challenge.difficulty,
+      }
+    });
+
+    const topicPromises = challenge.topics.map(topicName => 
+      db.challengeTopic.create({
+        data: { name: topicName, challengeId: createdChallenge.id }
+      })
+    );
+
+    const testCasePromises = challenge.test_cases.map(testCase => 
+      db.challengeTestCase.create({
+        data: { input: testCase.input, output: testCase.output, challengeId: createdChallenge.id }
+      })
+    );
+
+    await Promise.all([...topicPromises, ...testCasePromises]);
+  }
+}
+
+populateChallenges()
+  .then(() => console.log('Challenges populated successfully'))
+  .catch(error => console.error('Failed to populate challenges:', error));

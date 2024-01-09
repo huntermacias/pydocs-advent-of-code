@@ -1,22 +1,15 @@
 "use client";
 
+// pages/advent-challenge/[title].tsx
 import { useEffect, useState } from "react";
-import { Challenges } from "@/constants/advent_challenges";
-
-import { Badge } from "@/components/ui/badge";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "@/components/ui/accordion";
-import AceEditor from "react-ace"; // Assuming AceEditor is used
-
-import "ace-builds/src-noconflict/mode-python"; // Import AceEditor modes
-import "ace-builds/src-noconflict/theme-chaos"; // Import AceEditor themes
-import Confetti from 'react-confetti'
+import { useRouter } from "next/router";
+import AceEditor from "react-ace";
+import "ace-builds/src-noconflict/mode-python";
+import "ace-builds/src-noconflict/theme-chaos";
+import { UserButton, useUser } from "@clerk/nextjs";
 import { Progress } from "@/components/ui/progress";
-
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Badge } from "@/components/ui/badge";
 
 type TestCase = {
   input: string;
@@ -24,38 +17,63 @@ type TestCase = {
 };
 
 type ChallengeProps = {
+  id: string;
   title: string;
   description: string;
   difficulty: string;
-  topics: string[];
+  topics: { name: string }[];
   hints: string[];
-  test_cases: TestCase[];
+  testCases: TestCase[];
 };
 
-const AdventChallengePage = () => {
+type UserProps = {
+  id: string;
+  username: string;
+  imageUrl: string;
+};
+
+type SolvedByProps = {
+  user: UserProps;
+  challengeId: string;
+};
+
+
+const ChallengeDetailPage = () => {
   const [challenge, setChallenge] = useState<ChallengeProps | null>(null);
   const [editorCode, setEditorCode] = useState("");
-  const [executionResult, setExecutionResult] = useState(""); // State to store execution result
+  const [executionResult, setExecutionResult] = useState("");
   const [isTestRunning, setIsTestRunning] = useState(false);
-  const [progress, setProgress] = useState(0); // State for progress
+  const [progress, setProgress] = useState(0);
+  const { user } = useUser();
+  const router = useRouter();
+  const { title } = router.query;
+
+  useEffect(() => {
+    if (typeof title === 'string') {
+      fetch(`/api/challenges/${encodeURIComponent(title)}`)
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => setChallenge(data))
+        .catch(err => console.error('Error fetching challenge:', err));
+    }
+  }, [title]);
 
 
-  const runAllTestCases = async (challenge:ChallengeProps) => {
+
+  const runAllTestCases = async (challenge: ChallengeProps) => {
     setIsTestRunning(true);
     let passedTests = 0;
 
-    for (const testCase of challenge.test_cases) {
+    for (const testCase of challenge.testCases) {
       try {
         const response = await fetch('http://localhost:3002/run-code', {
-			method: "POST",
-			headers: {
-			  "Content-Type": "application/json",
-			},
-			body: JSON.stringify({
-			  language: "python",
-			  code: editorCode,
-			  input: testCase.input,
-			}),
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ language: "python", code: editorCode, input: testCase.input }),
         });
 
         const data = await response.json();
@@ -67,38 +85,50 @@ const AdventChallengePage = () => {
       }
     }
 
-    const progressPercentage = (passedTests / challenge.test_cases.length) * 100;
+    const progressPercentage = (passedTests / challenge.testCases.length) * 100;
     setProgress(progressPercentage);
-    setExecutionResult(`${passedTests} out of ${challenge.test_cases.length} tests passed.`);
+    setExecutionResult(`${passedTests} out of ${challenge.testCases.length} tests passed.`);
+
+    if (passedTests >= 0 && user) {
+      // console.log('userid::', user.id);
+      // console.log('problemId::', challenge.id);
+      try {
+        const response = await fetch('http://localhost:3000/api/recordSolution', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ userId: user.id, challengeId: challenge.id })
+        });
+        const data = await response.json();
+      } catch (error) {
+        console.error('Error recording solution:', error);
+      }
+    }
+
     setIsTestRunning(false);
   };
 
-    // Function to handle code changes in the editor
-	const handleEditorChange = (newCode: string) => {
-		setEditorCode(newCode);
-	  };
+  const handleEditorChange = (newCode: string) => {
+    setEditorCode(newCode);
+  };
 
-
-  // Function to handle code submission
   const handleCodeSubmit = async (testCase: TestCase) => {
-	setIsTestRunning(true);
-	try {
-	  const response = await fetch('http://localhost:3002/run-code', {
-		method: "POST",
-		headers: {
-		  "Content-Type": "application/json",
-		},
-		body: JSON.stringify({
-		  language: "python",
-		  code: editorCode,
-		  input: testCase.input,
-		}),
-	  });
-  
-	  const data = await response.json();
+    setIsTestRunning(true);
+    try {
+      const response = await fetch('http://localhost:3002/run-code', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          language: "python",
+          code: editorCode,
+          input: testCase.input,
+        }),
+      });
+
+      const data = await response.json();
       const passed = data.output.trim() === testCase.output.trim();
       setExecutionResult(`Test Case ${passed ? 'Passed' : 'Failed'}\n\nOutput:\n${data.output}`);
-	
     } catch (error) {
       console.error("Error submitting code:", error);
       setExecutionResult(`Error: ${error}`);
@@ -106,44 +136,30 @@ const AdventChallengePage = () => {
       setIsTestRunning(false);
     }
   };
-  
-
-  let title;
-
-  useEffect(() => {
-    const pathname = window.location.pathname;
-    let title = pathname
-      .substring(pathname.lastIndexOf("/") + 1)
-      .replaceAll("%20", " ");
-    const foundChallenge = Challenges.find(
-      (ch) => ch.title === decodeURIComponent(title)
-    );
-    if (foundChallenge) {
-      setChallenge(foundChallenge);
-    } else {
-      console.error("Challenge not found");
-    }
-  }, [title]);
 
   if (!challenge) {
-    return <p className="text-white">Loading...{title}</p>;
+    return <p className="text-white">Loading challenge...</p>;
   }
 
+
+  
+
   return (
-<div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-[#011627] text-white">
-      {/* Story and Problem Description Section */}
-	  <div className="p-8 border-r lg:border-gray-700">
+    <div className="grid grid-cols-1 lg:grid-cols-2 min-h-screen bg-[#011627] text-white">
+      {/* Top bar for user account management */}
+      <div className="p-8 border-r lg:border-gray-700">
+        <div className="flex justify-end p-0.5">
+          <UserButton afterSignOutUrl="/" />
+        </div>
         <h1 className="text-4xl font-bold mb-6">{challenge.title}</h1>
         <div className="mb-8">
           <span className="bg-purple-800 px-3 py-1 rounded text-sm font-semibold mr-2">
             Difficulty: {challenge.difficulty}
           </span>
-          {challenge.topics.map((topic) => (
-            <Badge
-              key={topic}
-              className="mr-2 mb-2 bg-blue-700 hover:bg-blue-600"
-            >
-              {topic}
+          
+          {challenge.topics.map((topic, index) => (
+            <Badge key={index} className="mr-2 mb-2 bg-blue-700 hover:bg-blue-600">
+              {String(topic.name)}
             </Badge>
           ))}
         </div>
@@ -153,26 +169,21 @@ const AdventChallengePage = () => {
             <Accordion key={index} type="single" collapsible className="w-full">
               <AccordionItem value={`hint-${index}`}>
                 <AccordionTrigger className="bg-gray-950 p-4 hover:bg-gray-700 rounded">
-                  <p className="tracking-wider font-semibold underline decoration-indigo-500">{`Hint ${
-                    index + 1
-                  }`}</p>
+                  <p className="tracking-wider font-semibold underline decoration-indigo-500">{`Hint ${index + 1}`}</p>
                 </AccordionTrigger>
                 <AccordionContent className="bg-gray-900 rounded p-4">
-                  <p>{hint}</p>
+                  <p>{String(hint)}</p>
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
           ))}
         </div>
       </div>
-
       {/* Coding and Testing Section */}
-	  <div className="p-8">
+      <div className="p-8">
         <div className="mb-8 w-full overflow-x-hidden">
-          <h2 className="text-2xl font-semibold mb-4">
-            Let&apos;s Get Started
-          </h2>
-		  <AceEditor
+          <h2 className="text-2xl font-semibold mb-4">Let&apos;s Get Started</h2>
+          <AceEditor
             mode="python"
             theme="chaos"
             name="codeEditor"
@@ -181,25 +192,24 @@ const AdventChallengePage = () => {
             editorProps={{ $blockScrolling: true }}
             setOptions={{ useWorker: false }}
             placeholder="// Start coding here"
-			className="w-full h-[400px] md:h-[500px] lg:h-[600px]"
-          
-        />
+            className="w-full h-[400px] md:h-[500px] lg:h-[600px]"
+          />
         </div>
         <div>
-		<h2 className="text-2xl font-semibold mb-4">Test Cases</h2>
-          {isTestRunning && <p className="text-blue-500">Running all tests...</p>}
+          <h2 className="text-2xl font-semibold mb-4">Test Cases</h2>
+          {isTestRunning && <p className="text-blue-500">Running test...</p>}
           <div className="bg-gray-700 text-white p-4 rounded-lg mb-4">
             <p className="font-semibold">Execution Result:</p>
             <pre className="max-h-60 overflow-y-auto">{executionResult || "No results yet"}</pre>
           </div>
-		  <button
-			onClick={() => runAllTestCases(challenge)}
+          <button
+            onClick={() => runAllTestCases(challenge)}
             className="mb-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded"
           >
             Run All Tests
           </button>
-		  <Progress value={progress} />
-          {challenge.test_cases.map((testCase, index) => (
+          <Progress value={progress} />
+            {challenge.testCases.map((testCase, index) => (
             <div key={index} className="bg-gray-800 p-4 rounded-lg mb-4">
               <p className="font-semibold">Test Case {index + 1}</p>
               <div className="flex flex-col md:flex-row gap-4">
@@ -222,10 +232,7 @@ const AdventChallengePage = () => {
               >
                 Run Test
               </button>
-				
             </div>
-
-
           ))}
         </div>
       </div>
@@ -233,4 +240,4 @@ const AdventChallengePage = () => {
   );
 };
 
-export default AdventChallengePage;
+export default ChallengeDetailPage;

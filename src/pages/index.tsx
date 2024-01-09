@@ -1,20 +1,56 @@
 "use client";
 import { useState, useEffect } from "react";
-import { SidebarRoutes } from "@/constants/sidebar_routes";
-import { Challenges } from "@/constants/advent_challenges";
+import { useUser } from "@clerk/nextjs";
+
 import Sidebar from "@/components/Sidebar";
 import ShowCode from "@/components/ShowCode";
-import { Input } from "@/components/ui/input";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
 
-import ChallengesCarousel from "@/components/ChallengesCarousel";
+import CodingChallenges from "@/components/CodingChallenges";
+import SolvedChallenges from "@/components/SolvedChallenges";
+import Routes from "@/components/SidebarRoutes";
+import { SidebarRoutes } from "@/routes/sidebarRoutes";
+import Leaderboard from "@/components/Leaderboard";
 
 export default function Home() {
+  const [challenges, setChallenges] = useState([]);
   const [activeSection, setActiveSection] = useState("");
+  const [userProgress, setUserProgress] = useState({ solved: 0, total: 0 });
+  const { isSignedIn, user } = useUser();
+  const [solvedChallenges, setSolvedChallenges] = useState([]);
+
+  // fetch all coding challenges
+  useEffect(() => {
+    const fetchChallenges = async () => {
+      try {
+        const response = await fetch("/api/challenges");
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        setChallenges(data);
+      } catch (error) {
+        console.error("Error fetching challenges:", error);
+      }
+    };
+
+    fetchChallenges();
+  }, []);
+
+
+  // Fetch solved challenges when the user is signed in
+  useEffect(() => {
+    if (isSignedIn && user) {
+      fetch(`/api/userSolvedChallenges/${user.id}`)
+        .then((response) => response.json())
+        .then((data) => {
+          setSolvedChallenges(data);
+          setUserProgress({ solved: data.length, total: challenges.length });
+        })
+        .catch((error) =>
+          console.error("Error fetching solved challenges:", error)
+        );
+    }
+  }, [user, isSignedIn, challenges.length]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,7 +92,11 @@ export default function Home() {
   return (
     <div className="flex min-h-screen bg-gray-950">
       {/* Sidebar */}
-      <Sidebar activeSection={activeSection} />
+      <Sidebar
+        activeSection={activeSection}
+        solvedChallenges={userProgress.solved}
+        totalChallenges={challenges.length}
+      />
 
       {/* Main Content */}
       <div className="flex-1 lg:ml-64 p-8 space-y-8">
@@ -70,55 +110,22 @@ export default function Home() {
             Python and Pygame documentation resource.
           </p>
         </div>
+  
+        {/* TODO: */}
+       {/* <Leaderboard /> */}
 
-        {/* Search Bar */}
-        <div className="flex justify-end sm:justify-center">
-          <Input
-            type="search"
-            placeholder="Search..."
-            className="px-4 py-2 w-full sm:w-48 rounded-md bg-gray-800 text-white"
-          />
-        </div>
+        {/* Solved Challenges Section */}
+        {isSignedIn && solvedChallenges.length > 0 && (
+          <SolvedChallenges solvedChallenges={solvedChallenges} />
+        )}
 
         {/* Cards with Amazing Info */}
-        <ChallengesCarousel challenges={Challenges} />
+        <CodingChallenges challenges={challenges} />
 
-        {/* Section Content */}
-        {SidebarRoutes.map((section) => (
-          <div
-            key={section.title}
-            id={section.title.toLowerCase()}
-            className="mb-10 pt-10 border-b border-indigo-600 mx-8"
-          >
-            <h2 className="text-3xl font-bold mb-4 text-center text-gray-300">
-              {section.title}
-            </h2>
-            {section.subSidebarRoutes.map((subSection) => (
-              <div
-              key={subSection.title}
-              className="flex flex-col md:flex-row mb-10 bg-[#1E293B] rounded-lg shadow-lg p-4 border border-gray-600 hover:bg-[#334155] transition-all duration-300"
-            >
-              {/* Section Title and Description */}
-              <div className="md:w-1/2 md:border-r border-indigo-500 p-4">
-                <h3 className="text-xl font-semibold text-indigo-400 mb-2">
-                  {subSection.title}
-                </h3>
-                <p className="text-gray-300">
-                  {subSection.description}
-                </p>
-              </div>
-            
-              {/* Code Section */}
-              <div className="md:w-1/2 p-4">
-                <div className="">
-                  <ShowCode files={subSection.files} />
-                </div>
-              </div>
-            </div>
-            
-            ))}
-          </div>
-        ))}
+        {/* Sidebar Routes */}
+        <Routes />
+
+
       </div>
     </div>
   );

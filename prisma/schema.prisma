@@ -1,0 +1,65 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+// User entity, representing each individual user
+model User {
+  id              String          @id @default(uuid())
+  username        String?         @unique
+  imageUrl        String          @db.Text
+  externalUserId  String          @unique
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  completedChallenges CompletedChallenge[]
+}
+
+// Challenge entity, representing each coding challenge
+model Challenge {
+  id          String          @id @default(uuid())
+  title       String
+  description String          @db.LongText
+  difficulty  String
+  topics      ChallengeTopic[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  testCases   ChallengeTestCase[]
+  completions CompletedChallenge[]
+}
+
+// Topics related to each challenge
+model ChallengeTopic {
+  id           String    @id @default(uuid())
+  name         String
+  challengeId  String
+  challenge    Challenge @relation(fields: [challengeId], references: [id])
+  @@index([challengeId])
+}
+
+// Test cases for each challenge
+model ChallengeTestCase {
+  id           String    @id @default(uuid())
+  challengeId  String
+  input        String
+  output       String
+  challenge    Challenge @relation(fields: [challengeId], references: [id])
+  @@index([challengeId])
+}
+
+// Represents the relationship between a user and a completed challenge
+model CompletedChallenge {
+  id            String    @id @default(uuid())
+  userId        String
+  challengeId   String
+  completedAt   DateTime  @default(now())
+  user          User      @relation(fields: [userId], references: [id])
+  challenge     Challenge @relation(fields: [challengeId], references: [id])
+  @@unique([userId, challengeId])
+  @@index([userId])
+  @@index([challengeId])
+}
