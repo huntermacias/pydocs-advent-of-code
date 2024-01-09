@@ -1,5 +1,6 @@
 import { currentUser } from "@clerk/nextjs";
 import { db } from "./db";
+import { PrismaClient } from "@prisma/client";
 
 // Function to get user by external user ID
 export const getUserByExternalId = async (externalUserId: string) => {
@@ -22,9 +23,11 @@ export const getUserByExternalId = async (externalUserId: string) => {
 // Function to add a solved problem to a user
 // Function to add a completed challenge to a user
 export const addSolvedProblem = async (userId: string, challengeId: string) => {
+  const prisma = new PrismaClient();
+
   try {
     // Create a new entry in the CompletedChallenge table
-    const completedChallenge = await db.completedChallenge.create({
+    const completedChallenge = await prisma.completedChallenge.create({
       data: {
         userId, // Reference to the User who completed the challenge
         challengeId, // Reference to the Challenge that was completed
