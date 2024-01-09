@@ -27,7 +27,7 @@ export const addSolvedProblem = async (userId: string, challengeId: string) => {
 
   try {
     // Create a new entry in the CompletedChallenge table
-    const completedChallenge = await prisma.completedChallenge.create({
+    const completedChallenge = await db.completedChallenge.create({
       data: {
         userId, // Reference to the User who completed the challenge
         challengeId, // Reference to the Challenge that was completed
