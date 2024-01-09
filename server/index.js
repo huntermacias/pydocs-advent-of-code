@@ -10,7 +10,9 @@ const app = express();
 app.use(bodyParser.json());
 // CORS configuration
 const corsOptions = {
-    origin: ['https://louse-harmless-stag.ngrok-free.app', 'http://localhost:3000'], // Add localhost to the list
+    origin: ['https://louse-harmless-stag.ngrok-free.app', 'http://localhost:3000',
+    'https://pydocs-aoc.vercel.app'
+], // Add localhost to the list
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
     preflightContinue: false,
     optionsSuccessStatus: 204
