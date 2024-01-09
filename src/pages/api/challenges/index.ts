@@ -1,8 +1,8 @@
 // pages/api/challenges/index.ts
-import { PrismaClient } from '@prisma/client';
+// import { db } from "../../../lib/db";
+import { db } from '@/lib/db';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const prisma = new PrismaClient();
 
 export default async function handler(
   req: NextApiRequest,
@@ -10,7 +10,7 @@ export default async function handler(
 ) {
   try {
     // Fetch all challenges from the database
-    const challenges = await prisma.challenge.findMany({
+    const challenges = await db.challenge.findMany({
       include: {
         topics: true,
         testCases: true,
@@ -30,6 +30,6 @@ export default async function handler(
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }

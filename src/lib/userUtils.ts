@@ -1,6 +1,5 @@
 import { currentUser } from "@clerk/nextjs";
 import { db } from "./db";
-import { PrismaClient } from "@prisma/client";
 
 // Function to get user by external user ID
 export const getUserByExternalId = async (externalUserId: string) => {
@@ -22,26 +21,24 @@ export const getUserByExternalId = async (externalUserId: string) => {
 
 // Function to add a solved problem to a user
 // Function to add a completed challenge to a user
-// export const addSolvedProblem = async (userId: string, challengeId: string) => {
-//   const prisma = new PrismaClient();
+export const addSolvedProblem = async (userId: string, challengeId: string) => {
+  try {
+    // Create a new entry in the CompletedChallenge table
+    const completedChallenge = await db.completedChallenge.create({
+      data: {
+        userId, // Reference to the User who completed the challenge
+        challengeId, // Reference to the Challenge that was completed
+        completedAt: new Date() // Timestamp of completion
+      }
+    });
 
-//   try {
-//     // Create a new entry in the CompletedChallenge table
-//     const completedChallenge = await db.completedChallenge.create({
-//       data: {
-//         userId, // Reference to the User who completed the challenge
-//         challengeId, // Reference to the Challenge that was completed
-//         completedAt: new Date() // Timestamp of completion
-//       }
-//     });
-
-//     console.log('Completed Challenge:', completedChallenge);
-//     return completedChallenge;
-//   } catch (error) {
-//     console.error('Error adding completed challenge:', error);
-//     throw error; // Propagate error for further handling
-//   }
-// };
+    console.log('Completed Challenge:', completedChallenge);
+    return completedChallenge;
+  } catch (error) {
+    console.error('Error adding completed challenge:', error);
+    throw error; // Propagate error for further handling
+  }
+};
 
 
 
@@ -52,15 +49,15 @@ export const getLeaderboardInfo = async () => {
         select: {
           id: true,
           username: true,
-          // completedChallenges: { select: { id: true } }
+          completedChallenges: { select: { id: true } }
         }
       });
   
       const leaderboard = users.map(user => ({
         id: user.id,
         username: user.username,
-        // completedCount: user.completedChallenges.length
-      }));
+        completedCount: user.completedChallenges.length
+      })).sort((a, b) => b.completedCount - a.completedCount);
   
       return leaderboard;
     } catch (error) {

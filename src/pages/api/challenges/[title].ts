@@ -1,8 +1,9 @@
 // pages/api/challenges/[title].ts
-import { PrismaClient } from '@prisma/client';
+// import { db } from "../../../lib/db";
+import { db } from '@/lib/db';
 import type { NextApiRequest, NextApiResponse } from 'next';
 
-const prisma = new PrismaClient();
+
 
 export default async function handler(
   req: NextApiRequest,
@@ -17,7 +18,7 @@ export default async function handler(
 
   try {
     // Fetch challenge data from the database based on the title
-    const challenge = await prisma.challenge.findFirst({
+    const challenge = await db.challenge.findFirst({
       where: { title },
       include: {
         topics: true,
@@ -41,6 +42,6 @@ export default async function handler(
     console.error(error);
     res.status(500).json({ message: "Internal Server Error" });
   } finally {
-    await prisma.$disconnect();
+    await db.$disconnect();
   }
 }

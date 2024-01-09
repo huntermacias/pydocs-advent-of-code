@@ -41,33 +41,4 @@
 	transition: background-color 0.3s ease;
   }
 
-  .solved-challenges-section {
-	font-family: 'Fira Code', monospace;
-	color: #d1d5db;
-  
-	.challenge-card {
-	  background-color: #1E293B;
-	  border: 1px solid #4b5563;
-	  transition: all 0.3s ease;
-  
-	  &:hover {
-		background-color: #334155;
-		box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-	  }
-  
-	  .challenge-title {
-		color: #818cf8; /* Indigo */
-		font-weight: bold;
-	  }
-  
-	  .challenge-completed-date {
-		font-size: 0.875rem;
-		color: #9ca3af;
-	  }
-  
-	  .challenge-description {
-		display: none; /* Hidden by default, shown in tooltip */
-	  }
-	}
-  }
-  
+ 
