@@ -1,17 +1,22 @@
 'use client';
-import { SidebarRoutes } from "@/constants/sidebar_routes";
 import { UserButton } from "@clerk/nextjs";
 import { FileCode2, FolderIcon, MenuIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import { Progress } from "./ui/progress";
+import { SidebarRoutes } from "@/routes/sidebarRoutes";
 
 type SidebarProps = {
 	  activeSection: string;
+    solvedChallenges: number;
+    totalChallenges: number;
 };
 
 
-const Sidebar = ({ activeSection }: SidebarProps) => {
+const Sidebar = ({ activeSection, solvedChallenges, totalChallenges }: SidebarProps) => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const progressValue = totalChallenges > 0 ? (solvedChallenges / totalChallenges) * 100 : 0;
+
 
   return (
     <>
@@ -31,14 +36,20 @@ const Sidebar = ({ activeSection }: SidebarProps) => {
           <XIcon className="h-6 w-6" />
         </button>
   
-        {/* Logo and User Button */}
-        <div className="flex justify-between items-center p-4">
-          <h1 className="text-2xl lg:text-3xl font-bold text-white">PyDocs</h1>
-          <div className="lg:block hidden">
-          <UserButton afterSignOutUrl="/"  />
+       {/* Logo and User Button */}
+    <div className="flex flex-col items-center p-4">
+      <h1 className="text-2xl lg:text-3xl font-bold text-white mb-4">PyDocs</h1>
+      <UserButton afterSignOutUrl="/" />
 
-          </div>
-        </div>
+      {/* Progress Tracker */}
+      <div className="w-full mb-6">
+        <span className="text-slate-300 text-sm mb-2 block">Challenges Progress</span>
+        <Progress value={progressValue} className="bg-[#0D1117] h-2 rounded-full" />
+        <span className="text-slate-400 text-xs mt-1 block">
+          {solvedChallenges} / {totalChallenges} Solved
+        </span>
+      </div>
+    </div>
   
         {/* Mobile User Button (visible only on smaller screens) */}
         <div className="p-4 lg:hidden">

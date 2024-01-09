@@ -43,7 +43,7 @@ export default async function clerkWebhookHandler(req: NextApiRequest, res: Next
   }
 
   const eventType = evt.type;
-  // console.log(`Received Clerk webhook: ${eventType}`);
+  console.log(`Received Clerk webhook: ${eventType}`);
   // console.log(body)
 
   // Handle different event types...

@@ -18,6 +18,11 @@ const buttonVariants = cva(
           "bg-slate-100 text-slate-900 hover:bg-slate-100/80 dark:bg-slate-800 dark:text-slate-50 dark:hover:bg-slate-800/80",
         ghost: "hover:bg-slate-100 hover:text-slate-900 dark:hover:bg-slate-800 dark:hover:text-slate-50",
         link: "text-slate-900 underline-offset-4 hover:underline dark:text-slate-50",
+        sexyNightWolf: `
+      bg-[#0D1117] text-[#58A6FF] border border-[#30363D] hover:bg-[#161B22] hover:border-[#58A6FF]
+      shadow-md hover:shadow-lg transition duration-300 ease-in-out
+      dark:bg-[#161B22] dark:text-[#58A6FF] dark:border-[#30363D] dark:hover:bg-[#0D1117] dark:hover:border-[#58A6FF]
+    `,
       },
       size: {
         default: "h-10 px-4 py-2",
