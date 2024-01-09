@@ -3,11 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "prisma": "prisma generate",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
     "start-server": "ts-node server/index.ts",
     "lint": "next lint"
+
   },
   "dependencies": {
     "@clerk/clerk-sdk-node": "^4.13.4",
