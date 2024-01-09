@@ -110,8 +110,9 @@ export default function Home() {
             Python and Pygame documentation resource.
           </p>
         </div>
-        
-        {/*TODO: <Leaderboard /> */}
+  
+        {/* TODO: */}
+       {/* <Leaderboard /> */}
 
         {/* Solved Challenges Section */}
         {isSignedIn && solvedChallenges.length > 0 && (
