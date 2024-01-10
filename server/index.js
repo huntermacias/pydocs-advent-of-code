@@ -25,37 +25,34 @@ const port = 3002;
 
 // Code execution API endpoint
 app.post('/run-code', (req, res) => {
+    console.log('running code')
     const { language, code } = req.body;
 
     if (language === 'python') {
-        const tempFilePath = `D:\\builds\\pydocs\\tempCode.py`; // Use an absolute path
+        const tempFilePath = `tempCode.py`;
         fs.writeFileSync(tempFilePath, code);
+        console.log('running docker')
+        // Using Docker to run the Python code in an isolated environment
+        const dockerCommand = `docker run --rm -v ${__dirname}:/app python:3 python /app/${tempFilePath}`;
 
-        // console.log("File created at:", tempFilePath); // Log to verify
-        // console.log("Current working directory:", process.cwd()); // Log the CWD
+        exec(dockerCommand, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`);
+                return res.status(500).send({ error: `Execution error: ${error.message}` });
+            }
 
-        // Check if file exists
-        if (fs.existsSync(tempFilePath)) {
-            // console.log("File exists, executing...");
+            res.send({ output: stdout, error: stderr });
 
-            exec(`python "${tempFilePath}"`, (error, stdout, stderr) => { // Added quotes around file path
-                if (error) {
-                    console.error(`exec error: ${error}`);
-                    return res.status(500).send({ error: `Execution error: ${error.message}` });
-                }
-
-                res.send({ output: stdout, error: stderr });
-
-                // Delete the file after execution
-                fs.unlinkSync(tempFilePath);
-            });
-        } else {
-            // console.error("File not found:", tempFilePath);
-            res.status(500).send({ error: 'Temporary file not found' });
-        }
+            // Delete the file after execution
+            fs.unlinkSync(tempFilePath);
+        });
     } else {
         res.status(400).send({ error: 'Unsupported language' });
     }
+});
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });
 
 // New endpoint for recording solutions

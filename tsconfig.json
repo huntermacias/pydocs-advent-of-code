@@ -29,6 +29,6 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "server/**/*.ts"
-, "server/index.js", "resetSolvedProblems.js"  ],
+, "server/index.js", "resetSolvedProblems.js", "src/pages/concepts/[concept].jsx", "src/pages/api/codeContent/codeContent.js"  ],
   "exclude": ["node_modules", "build"]
 }

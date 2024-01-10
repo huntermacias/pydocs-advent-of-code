@@ -23,6 +23,7 @@ export default async function handler(
       include: {
         topics: true,
         testCases: true,
+        hints: true,
         completions: {
           include: {
             challenge: true,

@@ -21,15 +21,24 @@ model User {
 
 // Challenge entity, representing each coding challenge
 model Challenge {
-  id          String          @id @default(uuid())
-  title       String
-  description String          @db.LongText
-  difficulty  String
-  topics      ChallengeTopic[]
-  createdAt   DateTime        @default(now())
-  updatedAt   DateTime        @updatedAt
-  testCases   ChallengeTestCase[]
-  completions CompletedChallenge[]
+  id           String              @id @default(uuid())
+  title        String
+  description  String              @db.LongText
+  difficulty   String
+  topics       ChallengeTopic[]
+  hints        ChallengeHint[]
+  testCases    ChallengeTestCase[]
+  createdAt    DateTime            @default(now())
+  updatedAt    DateTime            @updatedAt
+  completions  CompletedChallenge[]
+}
+
+model ChallengeHint {
+  id          String    @id @default(uuid())
+  text        String
+  challengeId String
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  @@index([challengeId])
 }
 
 // Topics related to each challenge
@@ -54,11 +63,11 @@ model ChallengeTestCase {
 // Represents the relationship between a user and a completed challenge
 model CompletedChallenge {
   id            String    @id @default(uuid())
-  userId        String
-  challengeId   String
+  userId        String?
+  challengeId   String?
   completedAt   DateTime  @default(now())
-  user          User      @relation(fields: [userId], references: [id])
-  challenge     Challenge @relation(fields: [challengeId], references: [id])
+  user          User?      @relation(fields: [userId], references: [id])
+  challenge     Challenge? @relation(fields: [challengeId], references: [id])
   @@unique([userId, challengeId])
   @@index([userId])
   @@index([challengeId])

@@ -60,13 +60,19 @@ async function populateChallenges() {
       })
     );
 
+	const hintPromises = challenge.hints.map(hint => 
+		db.challengeHint.create({
+		  data: { text: hint, challengeId: createdChallenge.id }
+		})
+	  );
+
     const testCasePromises = challenge.test_cases.map(testCase => 
       db.challengeTestCase.create({
         data: { input: testCase.input, output: testCase.output, challengeId: createdChallenge.id }
       })
     );
 
-    await Promise.all([...topicPromises, ...testCasePromises]);
+	await Promise.all([...topicPromises, ...hintPromises, ...testCasePromises]);
   }
 }
 

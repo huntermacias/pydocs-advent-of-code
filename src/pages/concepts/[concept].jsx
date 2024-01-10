@@ -1,17 +1,42 @@
-import React from 'react';
+'use client'
+import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
-import { SidebarRoutes } from "@/routes/sidebarRoutes";
-import ShowCode from "../../components/ShowCode";
+import ShowCode from '../../components/ShowCode';
+import { SidebarRoutes } from '@/routes/sidebarRoutes';
 
 const ConceptPage = () => {
   const router = useRouter();
   const { concept } = router.query;
+  const [conceptData, setConceptData] = useState(null);
+  const [conceptFilesContent, setConceptFilesContent] = useState({});
 
-  // Find the concept data using the router query
-  // Find the matching concept data using the concept query parameter
-  const conceptData = SidebarRoutes
-    .flatMap(route => route.subSidebarRoutes)
-    .find(subRoute => subRoute.title.toLowerCase().replace(/\s+/g, "-") === concept);
+  useEffect(() => {
+    if (concept) {
+      const foundConceptData = SidebarRoutes
+        .flatMap(route => route.subSidebarRoutes)
+        .find(subRoute => subRoute.title.toLowerCase().replace(/\s+/g, '-') === concept);
+
+      if (foundConceptData) {
+        setConceptData(foundConceptData);
+
+        Object.entries(foundConceptData.conceptFiles).forEach(([fileName, filePath]) => {
+          fetch(`/api/codeContent?fileName=${encodeURIComponent(filePath)}`)
+            .then(response => response.json())
+            .then(data => {
+              if (data.code) {
+                setConceptFilesContent(prev => ({
+                  ...prev,
+                  [fileName]: data.code,
+                }));
+              }
+            })
+            .catch(error => {
+              console.error(`Error fetching file ${filePath}:`, error);
+            });
+        });
+      }
+    }
+  }, [concept]);
 
   if (!conceptData) {
     return <p>Concept not found</p>; // or a more sophisticated error handling
@@ -87,7 +112,7 @@ const ConceptPage = () => {
         <div className="w-3/4">
           <h1 className="text-3xl font-bold mb-4">{conceptData.title}</h1>
           <p className="mb-6">{conceptData.description}</p>
-          <ShowCode animated={true} files={conceptData.conceptFiles} />
+          <ShowCode animated={true} files={conceptFilesContent} />
 
           {/* Code Details */}
           <div className="mt-8 bg-gray-950-sidebar p-6 rounded-lg">

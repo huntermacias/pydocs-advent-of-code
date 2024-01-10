@@ -16,13 +16,20 @@ type TestCase = {
   output: string;
 };
 
+type ChallengeHint = {
+  id: string;
+  text: string;
+  challengeId: string;
+};
+
+
 type ChallengeProps = {
   id: string;
   title: string;
   description: string;
   difficulty: string;
   topics: { name: string }[];
-  hints: string[];
+  hints: ChallengeHint[];
   testCases: TestCase[];
 };
 
@@ -43,10 +50,13 @@ const ChallengeDetailPage = () => {
   const [editorCode, setEditorCode] = useState("");
   const [executionResult, setExecutionResult] = useState("");
   const [isTestRunning, setIsTestRunning] = useState(false);
+  
   const [progress, setProgress] = useState(0);
   const { user } = useUser();
   const router = useRouter();
   const { title } = router.query;
+
+  console.log(challenge);
 
   useEffect(() => {
     if (typeof title === 'string') {
@@ -67,7 +77,7 @@ const ChallengeDetailPage = () => {
   const runAllTestCases = async (challenge: ChallengeProps) => {
     setIsTestRunning(true);
     let passedTests = 0;
-
+    
     for (const testCase of challenge.testCases) {
       try {
         const response = await fetch('http://localhost:3002/run-code', {
@@ -75,8 +85,13 @@ const ChallengeDetailPage = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ language: "python", code: editorCode, input: testCase.input }),
         });
-
+  
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+  
         const data = await response.json();
+        console.log(data)
         if (data.output.trim() === testCase.output.trim()) {
           passedTests++;
         }
@@ -84,28 +99,26 @@ const ChallengeDetailPage = () => {
         console.error("Error submitting code:", error);
       }
     }
-
+  
     const progressPercentage = (passedTests / challenge.testCases.length) * 100;
     setProgress(progressPercentage);
     setExecutionResult(`${passedTests} out of ${challenge.testCases.length} tests passed.`);
-
-    if (passedTests >= 0 && user) {
-      // console.log('userid::', user.id);
-      // console.log('problemId::', challenge.id);
+  
+    if (passedTests > 0 && user && user.id && challenge.id) {
       try {
-        const response = await fetch('http://localhost:3000/api/recordSolution', {
+        await fetch('http://localhost:3000/api/recordSolution', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ userId: user.id, challengeId: challenge.id })
         });
-        const data = await response.json();
       } catch (error) {
         console.error('Error recording solution:', error);
       }
     }
-
+  
     setIsTestRunning(false);
   };
+  
 
   const handleEditorChange = (newCode: string) => {
     setEditorCode(newCode);
@@ -170,17 +183,19 @@ const ChallengeDetailPage = () => {
         <div className="space-y-2">
           <p className="text-lg leading-relaxed">{challenge.description}</p>
           {challenge.hints?.map((hint, index) => (
-            <Accordion key={index} type="single" collapsible className="w-full">
-              <AccordionItem value={`hint-${index}`}>
-                <AccordionTrigger className="bg-gray-950 p-4 hover:bg-gray-700 rounded">
-                  <p className="tracking-wider font-semibold underline decoration-indigo-500">{`Hint ${index + 1}`}</p>
-                </AccordionTrigger>
-                <AccordionContent className="bg-gray-900 rounded p-4">
-                  <p>{String(hint)}</p>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-          ))}
+  <Accordion key={hint.id} type="single" collapsible className="w-full">
+    <AccordionItem value={`hint-${index}`}>
+      <AccordionTrigger className="bg-gray-950 p-4 hover:bg-gray-700 rounded">
+        <p className="tracking-wider font-semibold underline decoration-indigo-500">
+          Hint {index + 1}
+        </p>
+      </AccordionTrigger>
+      <AccordionContent className="bg-gray-900 rounded p-4">
+        <p>{hint.text}</p>
+      </AccordionContent>
+    </AccordionItem>
+  </Accordion>
+))}
         </div>
       </div>
   
