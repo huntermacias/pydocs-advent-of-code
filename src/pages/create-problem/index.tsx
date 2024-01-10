@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 
-import { problemSchema } from "./problemSchema"; // import the schema
+import { problemSchema } from "../../schemas/problemSchema"; // import the schema
 
 export function CreateProblemForm() {
   const form = useForm({
