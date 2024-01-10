@@ -15,8 +15,8 @@ RUN npm cache clean --force && npm install || cat /root/.npm/_logs/*-debug.log
 # Copy the rest of your app's source code from your host to your image filesystem.
 COPY . .
 
-# Make port 3001 available to the world outside this container
-EXPOSE 3001
+# Make port 3002 available to the world outside this container
+EXPOSE 3002
 
 # Run the app when the container launches
 CMD ["node", "server/index.js"]

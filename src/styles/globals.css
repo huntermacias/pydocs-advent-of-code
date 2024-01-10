@@ -41,4 +41,59 @@
 	transition: background-color 0.3s ease;
   }
 
- 
+ /* Custom scrollbar styles */
+.custom-scrollbar::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-track {
+	background: #191919; /* Dark track background */
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb {
+	background: #230674; /* Dark thumb */
+	border-radius: 5px;
+  }
+  
+  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: #1c2b6b; /* Lighter thumb on hover */
+  }
+  
+
+  @keyframes animate-gradient-dots {
+	0% {
+	  background-position: 0 0;
+	}
+	100% {
+	  background-position: 16px 16px;
+	}
+  }
+  
+  .bg-gradient-dots {
+	background-size: 16px 16px;
+	animation: animate-gradient-dots 8s linear infinite;
+  }
+  
+
+  /* Add this to your CSS file */
+@keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+  }
+  
+  .loader {
+	border: 4px solid #f3f3f3;
+	border-top: 4px solid #3498db;
+	border-radius: 50%;
+	width: 50px;
+	height: 50px;
+	animation: spin 2s linear infinite;
+  }
+  
+  .loading-text {
+	color: white;
+	font-size: 1.2em;
+	margin-top: 15px;
+  }
+  

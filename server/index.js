@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const { exec } = require('child_process');
 const fs = require('fs');
-// const { addSolvedProblem } = require('@/lib/userUtils');
+const { addSolvedProblem } = require('@/lib/userUtils');
 // const { v4: uuidv4 } = require('uuid');
 
 const app = express();

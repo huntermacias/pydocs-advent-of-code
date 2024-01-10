@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -21,7 +21,8 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
+import { Badge } from "./ui/badge";
 
 type TestCase = {
   input: string;
@@ -33,25 +34,37 @@ type ChallengeProps = {
   title: string;
   description: string;
   difficulty: string;
-  topics: { name: string }[]; // Update the type declaration of the topics property
+  topics: { name: string }[];
   hints: string[];
   test_cases: TestCase[];
+  isSolved: boolean; // Added field to track if the challenge is solved
 };
 
 type CodingChallengesProps = {
   challenges: ChallengeProps[];
+  solvedChallenges: { challengeId: string }[]; // You would pass only the IDs of solved challenges for simplicity
 };
 
-const CodingChallenges = ({ challenges }: CodingChallengesProps) => {
+const CodingChallenges = ({
+  challenges,
+  solvedChallenges,
+}: CodingChallengesProps) => {
   const router = useRouter();
+  const [selectedChallenge, setSelectedChallenge] =
+    useState<ChallengeProps | null>(null);
 
-  const [selectedChallenge, setSelectedChallenge] = useState<ChallengeProps | null>(null);
+  // Prepare the challenges data by marking them as solved or not
+  const preparedChallenges = challenges.map((challenge) => ({
+    ...challenge,
+    isSolved: solvedChallenges.some(
+      (solved) => solved.challengeId === challenge.id
+    ),
+  }));
 
-
-  const handleAcceptChallenge = (challenge:ChallengeProps) => {
-	  // Redirect to the dynamic page
-	  router.push(`/advent-challenge/${encodeURIComponent(challenge.title)}`);
-	};
+  const handleAcceptChallenge = (challenge: ChallengeProps) => {
+    // Redirect to the dynamic page
+    router.push(`/advent-challenge/${encodeURIComponent(challenge.title)}`);
+  };
 
   return (
     <section>
@@ -63,14 +76,17 @@ const CodingChallenges = ({ challenges }: CodingChallengesProps) => {
             <TableHead>Difficulty</TableHead>
             <TableHead>Topics</TableHead>
             <TableHead>Details</TableHead>
+            <TableHead>Solved</TableHead> {/* Added column for solved status */}
           </TableRow>
         </TableHeader>
         <TableBody>
-          {challenges.map((challenge, index) => (
+          {preparedChallenges.map((challenge, index) => (
             <TableRow key={index}>
               <TableCell>{challenge.title}</TableCell>
               <TableCell>{challenge.difficulty}</TableCell>
-              <TableCell>{challenge.topics.map(topic => topic.name).join(', ')}</TableCell>
+              <TableCell>
+                {challenge.topics.map((topic) => topic.name).join(", ")}
+              </TableCell>
               <TableCell>
                 <Dialog>
                   <DialogTrigger asChild>
@@ -83,18 +99,30 @@ const CodingChallenges = ({ challenges }: CodingChallengesProps) => {
                         {challenge.description}
                       </DialogDescription>
                     </DialogHeader>
-                    {/* Display other challenge details like difficulty, topics, hints, etc. */}
                     <DialogFooter>
                       <DialogClose asChild>
                         <Button variant="sexyNightWolf">Close</Button>
                       </DialogClose>
-                      {/* Button to navigate to challenge-solving page */}
-                      <Button variant="sexyNightWolf" onClick={() => handleAcceptChallenge(challenge)}>
-                        Solve Challenge
+                      <Button
+                        variant="sexyNightWolf"
+                        onClick={() => handleAcceptChallenge(challenge)}
+                      >
+                        {challenge.isSolved
+                          ? "Revisit Challenge"
+                          : "Solve Challenge"}
                       </Button>
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
+              </TableCell>
+              <TableCell>
+                <Badge
+                  variant={
+                    challenge.isSolved ? "nightWolfGreen" : "nightWolfRed"
+                  }
+                >
+                  {challenge.isSolved ? "Solved" : "Unsolved"}
+                </Badge>
               </TableCell>
             </TableRow>
           ))}
